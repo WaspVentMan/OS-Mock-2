@@ -12,3 +12,4 @@ for (let x = 0; x < 7; x++){
     document.querySelector(".forecast" + x).textContent = new Date().getDate() + x + "/" + new Date().getMonth() + "/" + new Date().getFullYear()
     document.querySelector(".forecastbg" + x).style.backgroundImage = "url('" + "https://art.ngfiles.com/images/3070000/3070983_waspventman_sleep-deprivation-deluxe.png" + "')"
 }
+document.querySelector(".forecast0").textContent += " (today)"
