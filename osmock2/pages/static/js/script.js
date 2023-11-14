@@ -1,7 +1,21 @@
 const PHiL = "https://waspventman.co.uk"
 
 const bannertext = document.querySelector(".bannertext")
-const bannerlist = ["Lorem ipsum dolor sit amet, consectetur adipiscing elit.", "Duis nec cursus justo, et pretium eros.", "Aenean pretium dolor odio, ut tempus odio faucibus et.", "Sed porttitor eget est nec blandit.", "In porta ex enim, non venenatis orci aliquam nec.", "Fusce faucibus sodales ligula eget feugiat.", "Aliquam maximus lacinia nisi vitae condimentum.", "Pellentesque consequat ornare leo, at accumsan arcu fringilla in.", "Donec sed libero eget lectus ultrices vestibulum.", "Praesent in dapibus augue.", "Curabitur lacinia mauris eget dictum suscipit.", "Vivamus libero neque, malesuada id ante ut, consectetur pretium enim.", "Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.", "Phasellus viverra accumsan risus non dapibus."]
+const bannerlist = [
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "Duis nec cursus justo, et pretium eros.",
+    "Aenean pretium dolor odio, ut tempus odio faucibus et.",
+    "Sed porttitor eget est nec blandit.",
+    "In porta ex enim, non venenatis orci aliquam nec.",
+    "Fusce faucibus sodales ligula eget feugiat.",
+    "Aliquam maximus lacinia nisi vitae condimentum.",
+    "Pellentesque consequat ornare leo, at accumsan arcu fringilla in.",
+    "Donec sed libero eget lectus ultrices vestibulum.",
+    "Praesent in dapibus augue.",
+    "Curabitur lacinia mauris eget dictum suscipit.",
+    "Vivamus libero neque, malesuada id ante ut, consectetur pretium enim.",
+    "Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.",
+    "Phasellus viverra accumsan risus non dapibus."]
 
 const rainindex = {
     "cs": {
