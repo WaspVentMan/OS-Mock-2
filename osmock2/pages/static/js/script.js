@@ -40,11 +40,11 @@ const rainindex = {
     },
     "tlr": {
         "name": "T&L; RAIN",
-        "url": "https://waspventman.co.uk/img/wasp.png"
+        "url": "https://art.ngfiles.com/images/5189000/5189239_173241_waspventman_untitled-5189239.e4d6899cd4d5b80942845f9ec4f9dc6e.webp?f1699311006"
     },
     "tlc": {
         "name": "T&L; CLDY",
-        "url": "https://waspventman.co.uk/img/wasp.png"
+        "url": "https://art.ngfiles.com/images/3044000/3044761_waspventman_blooming-perhaps-for-the-last-time.png?f1676311708"
     }
 }
 
@@ -69,12 +69,18 @@ for (let x = 0; x < 7; x++){
     let AQI = Math.round(Math.random()*10)
     let rain = Math.round(Math.random()*6)
 
-    document.querySelector(".forecast" + x).textContent = new Date().getDate() + x + "/" + new Date().getMonth() + "/" + new Date().getFullYear()
-    document.querySelector(".forecastbg" + x).style.backgroundImage = "url('" + "https://art.ngfiles.com/images/3070000/3070983_waspventman_sleep-deprivation-deluxe.png" + "')"
+    document.querySelector(".forecast" + x).textContent = new Date().getDate() + x + "/" + (new Date().getMonth()+1) + "/" + new Date().getFullYear()
+    document.querySelector(".forecastbg" + x).style.backgroundImage = "url('" + rainindex[temp[rain]].url + "')"
 
     document.querySelector(".forecasttemp" + x).textContent = rounddp(celcius, 1) + "C " + toF(celcius) +"F"
     document.querySelector(".forecastAQI" + x).textContent = "AQI: ‌ " + rounddp(AQI, 0)
     document.querySelector(".forecastrain" + x).textContent = rainindex[temp[rain]].name
-    document.querySelector(".forecastrainbg" + x).style.backgroundImage = "url(" + rainindex[temp[rain]].url + ")"
 }
 document.querySelector(".forecast0").textContent += " (today)"
+
+let rainbow = Math.round(Math.random()*360)
+
+setInterval(function(){
+    document.body.style.backgroundColor = "hsl(" + rainbow + "deg 50% 25%)"
+    rainbow += 0.01
+}, 0)
