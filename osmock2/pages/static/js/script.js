@@ -59,34 +59,61 @@ function rounddp(n, r){
     return Math.round(n*r)/r
 }
 
+function AQIconvert(AQI){
+    let convertbounds = [12, 24, 36, 42, 48, 54, 59, 65, 71]
+    let backgroundColors = ["#cfc", "#6f6", "#0f0", "#9f0", "#ff0", "#fc0", "#f60", "#f30", "#f00", "#f06"]
+
+    for (let x = 0; x < convertbounds.length; x++){
+        if (AQI < convertbounds[x]){
+            return [x+1, backgroundColors[x]]
+        }
+    }
+}
+
 async function weatherTime(position){
     let lat = position.coords.latitude
     let lng = position.coords.longitude
 
-    const weatherR = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=weather_code,temperature_2m_max,temperature_2m_min,rain_sum`)
+    const weatherR = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=weather_code,temperature_2m_max,temperature_2m_min,temperature_2m_min,rain_sum`)
     const airQualityR = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&hourly=pm10,pm2_5&forecast_days=7`)
 
     const weather = await weatherR.json()
     const airQuality = await airQualityR.json()
 
     for (let x = 0; x < 7; x++){
-        let celcius = weather.daily.temperature_2m_max[x]
+        let celcius = [weather.daily.temperature_2m_max[x], weather.daily.temperature_2m_min[x]]
 
         let AQI = airQuality.hourly.pm2_5[x*24]
         let rain = weather.daily.rain_sum[x]
-        let rainimg = Math.round((rain/100)*7)
+        let rainimg = Math.round((rain/100)*6)
 
         document.querySelector(".forecast" + x).textContent = new Date().getDate() + x + "/" + (new Date().getMonth()+1) + "/" + new Date().getFullYear()
         document.querySelector(".forecastbg" + x).style.backgroundImage = "url(" + rainindex[rainimg].url + ")"
 
-        document.querySelector(".forecasttemp" + x).textContent = rounddp(celcius, 1) + "C " + toF(celcius) +"F"
-        document.querySelector(".forecastAQI" + x).textContent = "AQI: ‌ " + AQI
-        document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rain + "%"
+        document.querySelector(".forecasttemp" + x).textContent = rounddp(celcius[1], 1) + "C " + rounddp(celcius[0], 1) +"C"
+
+        if (AQI != null){
+            document.querySelector(".forecastAQI" + x).textContent = "DAQI: " + AQIconvert(AQI)[0]
+            document.querySelector(".forecastAQIbg" + x).style.backgroundColor = AQIconvert(AQI)[1]
+        } else {
+            document.querySelector(".forecastAQI" + x).textContent = "NO :( DATA"
+        }
+
+        document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rounddp(rain, 1) + "%"
     }
     document.querySelector(".forecast0").textContent += " (today)"
 }
 
 function showError(error) {
+    let params = new URL(document.location).searchParams
+    let lat = params.get("lat")
+    let lng = params.get("lng")
+
+    if (lat != null && lng != null && !isNaN(parseInt(lat)) && !isNaN(parseInt(lng))){
+        weatherTime({"coords": {"latitude": lat, "longitude": lng}})
+        return
+    }
+
     switch(error.code) {
         case error.PERMISSION_DENIED:
             document.querySelector(".geoError").textContent = "⚠ User denied the request for Geolocation. ⚠"
@@ -102,7 +129,42 @@ function showError(error) {
             break;
     }
 
-    weatherTime(defaultLoc)
+    document.querySelector(".wholeweather").innerHTML = ""
+
+    let temp = document.createElement("p")
+    temp.textContent = "Manual Geolocation Entry:"
+    document.querySelector(".wholeweather").appendChild(temp)
+    temp = document.createElement("i")
+    temp.textContent = "Latitude: "
+    document.querySelector(".wholeweather").appendChild(temp)
+    temp = document.createElement("input")
+    temp.className = "ManualGeolocationInputLat"
+    document.querySelector(".wholeweather").appendChild(temp)
+    document.querySelector(".wholeweather").appendChild(document.createElement("br"))
+    temp = document.createElement("i")
+    temp.textContent = "Longitude: "
+    document.querySelector(".wholeweather").appendChild(temp)
+    temp = document.createElement("input")
+    temp.className = "ManualGeolocationInputLng"
+    document.querySelector(".wholeweather").appendChild(temp)
+    document.querySelector(".wholeweather").appendChild(document.createElement("br"))
+    temp = document.createElement("button")
+    temp.textContent = "Submit"
+    temp.onclick = function(){
+        if (
+            document.querySelector(".ManualGeolocationInputLat").value != "" &&
+            document.querySelector(".ManualGeolocationInputLng").value != "" &&
+            !isNaN(parseInt(document.querySelector(".ManualGeolocationInputLat").value)) &&
+            !isNaN(parseInt(document.querySelector(".ManualGeolocationInputLng").value)) &&
+            parseInt(document.querySelector(".ManualGeolocationInputLat").value) < 90 &&
+            parseInt(document.querySelector(".ManualGeolocationInputLat").value) > -90 &&
+            parseInt(document.querySelector(".ManualGeolocationInputLng").value) < 180 &&
+            parseInt(document.querySelector(".ManualGeolocationInputLng").value) > -180
+            ){
+                location.href = location.href + "?lat=" + document.querySelector(".ManualGeolocationInputLat").value + "&lng=" + document.querySelector(".ManualGeolocationInputLng").value
+            }
+        }
+    document.querySelector(".wholeweather").appendChild(temp)
 }
 
 function setBanner(){
