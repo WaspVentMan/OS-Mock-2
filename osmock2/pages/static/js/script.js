@@ -25,7 +25,7 @@ const rainindex = [
         "url": "https://waspventman.co.uk/img/wasp.png"
     },
     {
-        "name": "CLDY; DRY",
+        "name": "CLOUDY",
         "url": "https://art.ngfiles.com/images/5088000/5088680_41490_waspventman_untitled-5088680.744e4604e7467f0e6fb3517388d7096d.webp?f1696115243"
     },
     {
@@ -41,12 +41,12 @@ const rainindex = [
         "url": "https://art.ngfiles.com/images/3074000/3074566_waspventman_sparkling-tiles.png?f1677696275"
     },
     {
-        "name": "T&L; RAIN",
-        "url": "https://art.ngfiles.com/images/5189000/5189239_173241_waspventman_untitled-5189239.e4d6899cd4d5b80942845f9ec4f9dc6e.webp?f1699311006"
+        "name": "THUNDER AND LIGHTNING",
+        "url": "https://art.ngfiles.com/images/3044000/3044761_waspventman_blooming-perhaps-for-the-last-time.png?f1676311708"
     },
     {
-        "name": "T&L; CLDY",
-        "url": "https://art.ngfiles.com/images/3044000/3044761_waspventman_blooming-perhaps-for-the-last-time.png?f1676311708"
+        "name": "THUNDER AND LIGHTNING AND ALSO RAIN",
+        "url": "https://art.ngfiles.com/images/5189000/5189239_173241_waspventman_untitled-5189239.e4d6899cd4d5b80942845f9ec4f9dc6e.webp?f1699311006"
     }
 ]
 
@@ -68,6 +68,8 @@ function AQIconvert(AQI){
             return [x+1, backgroundColors[x]]
         }
     }
+
+    return [10, "#f06"]
 }
 
 async function weatherTime(position){
@@ -77,6 +79,34 @@ async function weatherTime(position){
     const weatherR = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=weather_code,temperature_2m_max,temperature_2m_min,temperature_2m_min,rain_sum`)
     const airQualityR = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&hourly=pm10,pm2_5&forecast_days=7`)
 
+    const locationR = await fetch(`https://api.opencagedata.com/geocode/v1/json?key=df841ae3cebd4c4d91643bf19e972128&q=${lat},${lng}&pretty=1&no_annotations=1`)
+    const location = await locationR.json()
+
+    let locationstr = `Forecast for `
+
+    if (location.results[0].components.city != undefined){
+        locationstr += location.results[0].components.city + ", "
+    } else {
+        locationstr = "Forecast for somewhere in "
+    }
+
+    if (location.results[0].components.state != undefined){
+        locationstr += location.results[0].components.state
+    } else if (location.results[0].components.country != undefined){
+        locationstr += location.results[0].components.country
+    }
+
+    if (locationstr == "Forecast for somewhere in Nevada"){
+        locationstr = "FORECAST FOR SOMEWHERE IN NEVADA"
+        document.querySelector(".locTitle").style.fontFamily = "Impact"
+        document.querySelector(".locTitle").style.textShadow = "-1px -1px 0 #F00, 1px -1px 0 #F00, -1px 1px 0 #F00, 1px 1px 0 #F00"
+
+        // haha madness reference :D
+        // ?lat=38.8871789&lng=-116.7064205
+    }
+
+    document.querySelector(".locTitle").textContent = locationstr
+
     const weather = await weatherR.json()
     const airQuality = await airQualityR.json()
 
@@ -85,7 +115,7 @@ async function weatherTime(position){
 
         let AQI = airQuality.hourly.pm2_5[x*24]
         let rain = weather.daily.rain_sum[x]
-        let rainimg = Math.round((rain/100)*6)
+        let rainimg = Math.round((rain/100)*(rainindex.length-1))
 
         document.querySelector(".forecast" + x).textContent = new Date().getDate() + x + "/" + (new Date().getMonth()+1) + "/" + new Date().getFullYear()
         document.querySelector(".forecastbg" + x).style.backgroundImage = "url(" + rainindex[rainimg].url + ")"
@@ -96,10 +126,11 @@ async function weatherTime(position){
             document.querySelector(".forecastAQI" + x).textContent = "DAQI: " + AQIconvert(AQI)[0]
             document.querySelector(".forecastAQIbg" + x).style.backgroundColor = AQIconvert(AQI)[1]
         } else {
-            document.querySelector(".forecastAQI" + x).textContent = "NO :( DATA"
+            document.querySelector(".forecastAQI" + x).textContent = "NO DATA"
         }
 
         document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rounddp(rain, 1) + "%"
+        document.querySelector(".forecastrainbg" + x).style.backgroundColor = `rgb(${255-((255/100)*rain)}, 255, 255)`
     }
     document.querySelector(".forecast0").textContent += " (today)"
 }
@@ -111,6 +142,7 @@ function showError(error) {
 
     if (lat != null && lng != null && !isNaN(parseInt(lat)) && !isNaN(parseInt(lng))){
         weatherTime({"coords": {"latitude": lat, "longitude": lng}})
+        document.querySelector(".geoError").textContent = `Manual Geolocation enabled (${lat}, ${lng})`
         return
     }
 
