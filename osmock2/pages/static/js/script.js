@@ -7,31 +7,31 @@ let bannerlist = []
 
 const rainindex = [
     {
-        "name": "HAG's Delirium: Phase 1",
+        "name": "Hag's Delirium: Phase 1",
         "url": "static/img/HDP1.png"
     },
     {
-        "name": "HAG's Delirium: Phase 2",
+        "name": "Hag's Delirium: Phase 2",
         "url": "static/img/HDP2.png"
     },
     {
-        "name": "HAG's Delirium: Phase 3",
+        "name": "Hag's Delirium: Phase 3",
         "url": "static/img/HDP3.png"
     },
     {
-        "name": "HAG's Delirium: Phase 4",
+        "name": "Hag's Delirium: Phase 4",
         "url": "static/img/HDP4.png"
     },
     {
-        "name": "HAG's Delirium: Phase 5",
+        "name": "Hag's Delirium: Phase 5",
         "url": "static/img/HDP5.png"
     },
     {
-        "name": "HAG's Delirium: Phase 6",
+        "name": "Hag's Delirium: Phase 6",
         "url": "static/img/HDP6.png"
     },
     {
-        "name": "HAG's Delirium: Phase 7",
+        "name": "Hag's Delirium: Phase 7",
         "url": "static/img/HDP7.png"
     }
 ]
@@ -62,16 +62,22 @@ function rounddp(n, r){
  * @returns [DAQI, BGColour]
  */
 function AQIconvert(AQI){
-    let convertbounds = [12, 24, 36, 42, 48, 54, 59, 65, 71]
+    let convertbounds = [0, 12, 24, 36, 42, 48, 54, 59, 65, 71]
     let backgroundColors = ["#cfc", "#6f6", "#0f0", "#9f0", "#ff0", "#fc0", "#f60", "#f30", "#f00", "#f06"]
 
     for (let x = 0; x < convertbounds.length; x++){
         if (AQI < convertbounds[x]){
-            return [x+1, backgroundColors[x]]
+            let aqistr = x + "." + Math.round((AQI-convertbounds[x-1])/(convertbounds[x]-convertbounds[x-1])*100)
+
+            if (aqistr.endsWith(".0")){
+                aqistr = aqistr.slice(0, -2)
+            }
+
+            return [aqistr, backgroundColors[x]]
         }
     }
 
-    return [10, "#f06"]
+    return ["10+", "#f06"]
 }
 
 /**
@@ -123,7 +129,11 @@ async function weatherTime(position){
 
         let AQI = airQuality.hourly.pm2_5[x*24]
         let rain = weather.daily.rain_sum[x]
-        let rainimg = Math.round((rain/100)*(rainindex.length-1))
+        let rainimg = Math.round((AQI/100)*(rainindex.length-1))
+
+        if (rainimg > rainindex.length-1){
+            rainimg = rainindex.length-1
+        }
 
         const newdate = new Date()
         newdate.setDate(newdate.getDate()+x)
