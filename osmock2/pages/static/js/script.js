@@ -104,6 +104,7 @@ async function weatherTime(position){
         locationstr += location.results[0].components.country
     }
 
+    // Madness Combat Easter Egg
     if (locationstr == "Forecast for somewhere in Nevada"){
         locationstr = "SOMEWHERE IN NEVADA"
         document.querySelector(".locTitle").style.fontFamily = "Impact"
