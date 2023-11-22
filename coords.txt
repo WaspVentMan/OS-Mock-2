@@ -1,0 +1,8 @@
+Somewhere in Nevada
+?lat=38.8871789&lng=-116.7064205
+
+NYC
+?lat=40.7219648&lng=-73.8201312
+
+Kowloon (for AQI testing)
+?lat=22.3317207&lng=114.189812

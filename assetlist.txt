@@ -2,15 +2,24 @@
 + | Assets used that I have created
   |
   | 02/11/2023
-+ | https://waspventman.co.uk/img/wasp.png
-+ | https://art.ngfiles.com/images/5088000/5088680_41490_waspventman_untitled-5088680.744e4604e7467f0e6fb3517388d7096d.webp?f1696115243
-+ | https://art.ngfiles.com/images/3074000/3074562_waspventman_budget-static.png?f1677696189
-+ | https://art.ngfiles.com/images/5146000/5146408_118157_waspventman_untitled-5146408.9ec5f706ee374e902f49edd7451750e5.png?f1697925636
++ | (Removed) https://waspventman.co.uk/img/wasp.png
++ | (Removed) https://art.ngfiles.com/images/5088000/5088680_41490_waspventman_untitled-5088680.744e4604e7467f0e6fb3517388d7096d.webp?f1696115243
++ | (Removed) https://art.ngfiles.com/images/3074000/3074562_waspventman_budget-static.png?f1677696189
++ | (Removed) https://art.ngfiles.com/images/5146000/5146408_118157_waspventman_untitled-5146408.9ec5f706ee374e902f49edd7451750e5.png?f1697925636
   |
   | 07/11/2023
-+ | https://art.ngfiles.com/images/3074000/3074566_waspventman_sparkling-tiles.png?f1677696275
-+ | https://art.ngfiles.com/images/3070000/3070983_waspventman_sleep-deprivation-deluxe.png?f1677522859
++ | (Removed) https://art.ngfiles.com/images/3074000/3074566_waspventman_sparkling-tiles.png?f1677696275
++ | (Removed) https://art.ngfiles.com/images/3070000/3070983_waspventman_sleep-deprivation-deluxe.png?f1677522859
   |
   | 15/11/2023
-+ | https://art.ngfiles.com/images/5189000/5189239_173241_waspventman_untitled-5189239.e4d6899cd4d5b80942845f9ec4f9dc6e.webp?f1699311006
-+ | https://art.ngfiles.com/images/3044000/3044761_waspventman_blooming-perhaps-for-the-last-time.png?f1676311708
++ | (Removed) https://art.ngfiles.com/images/5189000/5189239_173241_waspventman_untitled-5189239.e4d6899cd4d5b80942845f9ec4f9dc6e.webp?f1699311006
++ | (Removed) https://art.ngfiles.com/images/3044000/3044761_waspventman_blooming-perhaps-for-the-last-time.png?f1676311708
+  |
+  | 22/11/2023
++ | static/img/HDP1.png (HAG's Delirium: Phase 1)
++ | static/img/HDP2.png (HAG's Delirium: Phase 2)
++ | static/img/HDP3.png (HAG's Delirium: Phase 3)
++ | static/img/HDP4.png (HAG's Delirium: Phase 4)
++ | static/img/HDP5.png (HAG's Delirium: Phase 5)
++ | static/img/HDP6.png (HAG's Delirium: Phase 6)
++ | static/img/HDP7.png (HAG's Delirium: Phase 7)

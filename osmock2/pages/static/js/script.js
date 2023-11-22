@@ -3,62 +3,64 @@ const PHiL = "https://waspventman.co.uk"
 const defaultLoc = {"coords": {"latitude": 0, "longitude": 0}}
 
 const bannertext = document.querySelector(".bannertext")
-let bannerlist = [
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    "Duis nec cursus justo, et pretium eros.",
-    "Aenean pretium dolor odio, ut tempus odio faucibus et.",
-    "Sed porttitor eget est nec blandit.",
-    "In porta ex enim, non venenatis orci aliquam nec.",
-    "Fusce faucibus sodales ligula eget feugiat.",
-    "Aliquam maximus lacinia nisi vitae condimentum.",
-    "Pellentesque consequat ornare leo, at accumsan arcu fringilla in.",
-    "Donec sed libero eget lectus ultrices vestibulum.",
-    "Praesent in dapibus augue.",
-    "Curabitur lacinia mauris eget dictum suscipit.",
-    "Vivamus libero neque, malesuada id ante ut, consectetur pretium enim.",
-    "Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.",
-    "Phasellus viverra accumsan risus non dapibus."]
+let bannerlist = []
 
 const rainindex = [
     {
-        "name": "CLEAR SKIES",
-        "url": "https://waspventman.co.uk/img/wasp.png"
+        "name": "HAG's Delirium: Phase 1",
+        "url": "static/img/HDP1.png"
     },
     {
-        "name": "CLOUDY",
-        "url": "https://art.ngfiles.com/images/5088000/5088680_41490_waspventman_untitled-5088680.744e4604e7467f0e6fb3517388d7096d.webp?f1696115243"
+        "name": "HAG's Delirium: Phase 2",
+        "url": "static/img/HDP2.png"
     },
     {
-        "name": "LIGHT RAIN",
-        "url": "https://art.ngfiles.com/images/3074000/3074562_waspventman_budget-static.png?f1677696189"
+        "name": "HAG's Delirium: Phase 3",
+        "url": "static/img/HDP3.png"
     },
     {
-        "name": "HEAVY RAIN",
-        "url": "https://art.ngfiles.com/images/5146000/5146408_118157_waspventman_untitled-5146408.9ec5f706ee374e902f49edd7451750e5.png?f1697925636"
+        "name": "HAG's Delirium: Phase 4",
+        "url": "static/img/HDP4.png"
     },
     {
-        "name": "ACID RAIN",
-        "url": "https://art.ngfiles.com/images/3074000/3074566_waspventman_sparkling-tiles.png?f1677696275"
+        "name": "HAG's Delirium: Phase 5",
+        "url": "static/img/HDP5.png"
     },
     {
-        "name": "THUNDER AND LIGHTNING",
-        "url": "https://art.ngfiles.com/images/3044000/3044761_waspventman_blooming-perhaps-for-the-last-time.png?f1676311708"
+        "name": "HAG's Delirium: Phase 6",
+        "url": "static/img/HDP6.png"
     },
     {
-        "name": "THUNDER AND LIGHTNING AND ALSO RAIN",
-        "url": "https://art.ngfiles.com/images/5189000/5189239_173241_waspventman_untitled-5189239.e4d6899cd4d5b80942845f9ec4f9dc6e.webp?f1699311006"
+        "name": "HAG's Delirium: Phase 7",
+        "url": "static/img/HDP7.png"
     }
 ]
 
+/**
+ * Converts Celcius to Farenheit
+ * @param {*} C Temp (Celcius)
+ * @returns Temp (Farenheit)
+ */
 function toF(C){
     return rounddp(((C*(9/5)) + 32), 1)
 }
 
+/**
+ * Rounds numbers (but fancy)
+ * @param {*} n Input number
+ * @param {*} r How many D.P. to round it to
+ * @returns Rounded number
+ */
 function rounddp(n, r){
     r = 10**r
     return Math.round(n*r)/r
 }
 
+/**
+ * Converts raw AQI value into DAQI index
+ * @param {*} AQI Air Quality Index value
+ * @returns [DAQI, BGColour]
+ */
 function AQIconvert(AQI){
     let convertbounds = [12, 24, 36, 42, 48, 54, 59, 65, 71]
     let backgroundColors = ["#cfc", "#6f6", "#0f0", "#9f0", "#ff0", "#fc0", "#f60", "#f30", "#f00", "#f06"]
@@ -72,6 +74,10 @@ function AQIconvert(AQI){
     return [10, "#f06"]
 }
 
+/**
+ * This function calls all the APIs and updates all the boxes and health advice
+ * @param {*} position {"coords": {"latitude": latitude, "longitude": longitude}}
+ */
 async function weatherTime(position){
     let lat = position.coords.latitude
     let lng = position.coords.longitude
@@ -90,19 +96,18 @@ async function weatherTime(position){
         locationstr = "Forecast for somewhere in "
     }
 
-    if (location.results[0].components.state != undefined){
+    if (location.results[0].components.city == location.results[0].components.state){
+        locationstr = locationstr.slice(0, -2)
+    } else if (location.results[0].components.state != undefined){
         locationstr += location.results[0].components.state
     } else if (location.results[0].components.country != undefined){
         locationstr += location.results[0].components.country
     }
 
     if (locationstr == "Forecast for somewhere in Nevada"){
-        locationstr = "FORECAST FOR SOMEWHERE IN NEVADA"
+        locationstr = "SOMEWHERE IN NEVADA"
         document.querySelector(".locTitle").style.fontFamily = "Impact"
         document.querySelector(".locTitle").style.textShadow = "-1px -1px 0 #F00, 1px -1px 0 #F00, -1px 1px 0 #F00, 1px 1px 0 #F00"
-
-        // haha madness reference :D
-        // ?lat=38.8871789&lng=-116.7064205
     }
 
     document.querySelector(".locTitle").textContent = locationstr
@@ -111,30 +116,88 @@ async function weatherTime(position){
     const airQuality = await airQualityR.json()
 
     for (let x = 0; x < 7; x++){
+        let adviceFlag = false
+
         let celcius = [weather.daily.temperature_2m_max[x], weather.daily.temperature_2m_min[x]]
 
         let AQI = airQuality.hourly.pm2_5[x*24]
         let rain = weather.daily.rain_sum[x]
         let rainimg = Math.round((rain/100)*(rainindex.length-1))
 
-        document.querySelector(".forecast" + x).textContent = new Date().getDate() + x + "/" + (new Date().getMonth()+1) + "/" + new Date().getFullYear()
+        const newdate = new Date()
+        newdate.setDate(newdate.getDate()+x)
+
+        let HA = document.createElement("h2")
+        HA.style.backgroundColor = "black"
+        HA.style.color = "white"
+        HA.style.margin = "0%"
+        HA.textContent = newdate.getDate() + "/" + (newdate.getMonth()+1) + "/" + newdate.getFullYear()
+        document.querySelector(".healthAdvice").appendChild(HA)
+
+        bannerlist.push(HA.textContent)
+
+        document.querySelector(".forecast" + x).textContent = newdate.getDate() + "/" + (newdate.getMonth()+1) + "/" + newdate.getFullYear()
+
+        if (x == 0){
+            document.querySelector(".forecast0").textContent += " (today)"
+        }
+
+        document.querySelector(".artwork" + x).textContent = "Art: \"" + rainindex[rainimg].name + "\""
+
         document.querySelector(".forecastbg" + x).style.backgroundImage = "url(" + rainindex[rainimg].url + ")"
 
-        document.querySelector(".forecasttemp" + x).textContent = rounddp(celcius[1], 1) + "C " + rounddp(celcius[0], 1) +"C"
+        document.querySelector(".forecasttemp" + x).textContent = rounddp(celcius[1], 1) + "°C " + rounddp(celcius[0], 1) +"°C"
 
         if (AQI != null){
             document.querySelector(".forecastAQI" + x).textContent = "DAQI: " + AQIconvert(AQI)[0]
             document.querySelector(".forecastAQIbg" + x).style.backgroundColor = AQIconvert(AQI)[1]
+
+            if (AQIconvert(AQI)[0] == 10){
+                adviceFlag = true
+                let HA = document.createElement("p")
+                HA.textContent = "(DAQI " + AQIconvert(AQI)[0] + ") Adults and children with lung problems, adults with heart problems, and older people, should avoid strenuous physical activity. People with asthma may find they need to use their reliever inhaler more often."
+                document.querySelector(".healthAdvice").appendChild(HA)
+                bannerlist.push(HA.textContent)
+            } else if (AQIconvert(AQI)[0] >= 7){
+                adviceFlag = true
+                let HA = document.createElement("p")
+                HA.textContent = "(DAQI " + AQIconvert(AQI)[0] + ") Adults and children with lung problems, and adults with heart problems, should reduce strenuous physical exertion, particularly outdoors, and particularly if they experience symptoms. People with asthma may find they need to use their reliever inhaler more often. Older people should also reduce physical exertion."
+                document.querySelector(".healthAdvice").appendChild(HA)
+                bannerlist.push(HA.textContent)
+            } else if (AQIconvert(AQI)[0] >= 4){
+                adviceFlag = true
+                let HA = document.createElement("p")
+                HA.textContent = "(DAQI " + AQIconvert(AQI)[0] + ") Adults and children with lung problems, and adults with heart problems, who experience symptoms, should consider reducing strenuous physical activity, particularly outdoors."
+                document.querySelector(".healthAdvice").appendChild(HA)
+                bannerlist.push(HA.textContent)
+            } 
         } else {
             document.querySelector(".forecastAQI" + x).textContent = "NO DATA"
+            adviceFlag = true
+            let HA = document.createElement("p")
+            HA.textContent = "DAQI for today is unkown, check back when data is available."
+            document.querySelector(".healthAdvice").appendChild(HA)
+            bannerlist.push(HA.textContent)
         }
 
         document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rounddp(rain, 1) + "%"
         document.querySelector(".forecastrainbg" + x).style.backgroundColor = `rgb(${255-((255/100)*rain)}, 255, 255)`
+
+        if (!adviceFlag){
+            let HA = document.createElement("p")
+            HA.textContent = "No health advice needed, continue your day as normal."
+            bannerlist.push(HA.textContent)
+            document.querySelector(".healthAdvice").appendChild(HA)
+        }
     }
-    document.querySelector(".forecast0").textContent += " (today)"
+
+    setBanner()
 }
 
+/**
+ * If automatic geolocation is disabled, this function is ran.
+ * @param {*} error idk what this is lol
+ */
 function showError(error) {
     let params = new URL(document.location).searchParams
     let lat = params.get("lat")
@@ -199,6 +262,9 @@ function showError(error) {
     document.querySelector(".wholeweather").appendChild(temp)
 }
 
+/**
+ * Updates the marquee at the top of the site with the contents of bannerlist
+ */
 function setBanner(){
     bannertext.textContent = ""
     for (let x = 0; x < bannerlist.length; x++){
@@ -207,6 +273,9 @@ function setBanner(){
     }
 }
 
+/**
+ * I don't even know why I made this a function :/
+ */
 async function updatestats(){
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(weatherTime, showError)
@@ -214,8 +283,6 @@ async function updatestats(){
         weatherTime(defaultLoc)
     }
 }
-
-setBanner()
 
 updatestats()
 
