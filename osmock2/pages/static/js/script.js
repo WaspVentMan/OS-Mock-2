@@ -7,31 +7,31 @@ let bannerlist = []
 
 const rainindex = [
     {
-        "name": "Hag's Delirium: Phase 1",
+        "name": "Hag's Delirium: Phase 1", //, \"Safety Third\"
         "url": "static/img/HDP1.png"
     },
     {
-        "name": "Hag's Delirium: Phase 2",
+        "name": "Hag's Delirium: Phase 2", //, \"Squared Twice\"
         "url": "static/img/HDP2.png"
     },
     {
-        "name": "Hag's Delirium: Phase 3",
+        "name": "Hag's Delirium: Phase 3", //, \"Infinitely Long Fence\"
         "url": "static/img/HDP3.png"
     },
     {
-        "name": "Hag's Delirium: Phase 4",
+        "name": "Hag's Delirium: Phase 4", //, \"Smoke\"
         "url": "static/img/HDP4.png"
     },
     {
-        "name": "Hag's Delirium: Phase 5",
+        "name": "Hag's Delirium: Phase 5", //, \"Squared Thrice\"
         "url": "static/img/HDP5.png"
     },
     {
-        "name": "Hag's Delirium: Phase 6",
+        "name": "Hag's Delirium: Phase 6", //, \"Quiet Sphere\"
         "url": "static/img/HDP6.png"
     },
     {
-        "name": "Hag's Delirium: Phase 7",
+        "name": "Hag's Delirium: Phase 7", //, \"Sheer Danger\"
         "url": "static/img/HDP7.png"
     }
 ]
@@ -73,7 +73,7 @@ function AQIconvert(AQI){
                 aqistr = aqistr.slice(0, -2)
             }
 
-            return [aqistr, backgroundColors[x]]
+            return [parseFloat(aqistr), backgroundColors[x]]
         }
     }
 
@@ -122,6 +122,8 @@ async function weatherTime(position){
     const weather = await weatherR.json()
     const airQuality = await airQualityR.json()
 
+    let avgrainimg = 0
+
     for (let x = 0; x < 7; x++){
         let adviceFlag = false
 
@@ -129,11 +131,22 @@ async function weatherTime(position){
 
         let AQI = airQuality.hourly.pm2_5[x*24]
         let rain = weather.daily.rain_sum[x]
-        let rainimg = Math.round((AQI/100)*(rainindex.length-1))
+        let rainimg = Math.round((rain/100)*(rainindex.length-1))
+        let aqiimg = 0
+
+        if (AQI != null){
+            aqiimg = Math.floor((parseFloat(AQIconvert(AQI)[0])/10)*(rainindex.length-1))
+        }
+
+        if (aqiimg > rainimg){
+            rainimg = aqiimg
+        }
 
         if (rainimg > rainindex.length-1){
             rainimg = rainindex.length-1
         }
+
+        avgrainimg += rainimg+1
 
         const newdate = new Date()
         newdate.setDate(newdate.getDate()+x)
@@ -144,7 +157,6 @@ async function weatherTime(position){
         HA.style.margin = "0%"
         HA.textContent = newdate.getDate() + "/" + (newdate.getMonth()+1) + "/" + newdate.getFullYear()
         document.querySelector(".healthAdvice").appendChild(HA)
-
         bannerlist.push(HA.textContent)
 
         document.querySelector(".forecast" + x).textContent = newdate.getDate() + "/" + (newdate.getMonth()+1) + "/" + newdate.getFullYear()
@@ -153,9 +165,23 @@ async function weatherTime(position){
             document.querySelector(".forecast0").textContent += " (today)"
         }
 
-        document.querySelector(".artwork" + x).textContent = "Art: \"" + rainindex[rainimg].name + "\""
+        document.querySelector(".artwork" + x).textContent = rainindex[rainimg].name //"Art: \"" + rainindex[rainimg].name + "\""
 
         document.querySelector(".forecastbg" + x).style.backgroundImage = "url(" + rainindex[rainimg].url + ")"
+
+        if (celcius[1] < 0){
+            adviceFlag = true
+            let HA = document.createElement("p")
+            HA.textContent = "(LOW TEMP " + celcius[1] + "°C) The low temperature is below freezing, wrap up warm."
+            document.querySelector(".healthAdvice").appendChild(HA)
+            bannerlist.push(HA.textContent)
+        } else if (celcius[0] > 30){
+            adviceFlag = true
+            let HA = document.createElement("p")
+            HA.textContent = "(HIGH TEMP " + celcius[0] + "°C) The high temperature is very high, try to stay cool."
+            document.querySelector(".healthAdvice").appendChild(HA)
+            bannerlist.push(HA.textContent)
+        }
 
         document.querySelector(".forecasttemp" + x).textContent = rounddp(celcius[1], 1) + "°C " + rounddp(celcius[0], 1) +"°C"
 
@@ -163,7 +189,7 @@ async function weatherTime(position){
             document.querySelector(".forecastAQI" + x).textContent = "DAQI: " + AQIconvert(AQI)[0]
             document.querySelector(".forecastAQIbg" + x).style.backgroundColor = AQIconvert(AQI)[1]
 
-            if (AQIconvert(AQI)[0] == 10){
+            if (AQIconvert(AQI)[0] == "10+"){
                 adviceFlag = true
                 let HA = document.createElement("p")
                 HA.textContent = "(DAQI " + AQIconvert(AQI)[0] + ") Adults and children with lung problems, adults with heart problems, and older people, should avoid strenuous physical activity. People with asthma may find they need to use their reliever inhaler more often."
@@ -183,16 +209,45 @@ async function weatherTime(position){
                 bannerlist.push(HA.textContent)
             } 
         } else {
-            document.querySelector(".forecastAQI" + x).textContent = "NO DATA"
+            document.querySelector(".forecastAQIbg" + x).remove()
             adviceFlag = true
             let HA = document.createElement("p")
-            HA.textContent = "DAQI for today is unkown, check back when data is available."
+            HA.textContent = "DAQI for today is unknown, check back when data is available."
             document.querySelector(".healthAdvice").appendChild(HA)
             bannerlist.push(HA.textContent)
         }
 
-        document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rounddp(rain, 1) + "%"
-        document.querySelector(".forecastrainbg" + x).style.backgroundColor = `rgb(${255-((255/100)*rain)}, 255, 255)`
+        if (rain != null){
+            document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rounddp(rain, 1) + "%"
+            document.querySelector(".forecastrainbg" + x).style.backgroundColor = `rgb(${255-((255/100)*rain)}, 255, 255)`
+
+            if (rain > 75){
+                adviceFlag = true
+                let HA = document.createElement("p")
+                HA.textContent = "(RAIN: " + rounddp(rain, 2) + "%) Lots of rain, be careful not to slip."
+                document.querySelector(".healthAdvice").appendChild(HA)
+                bannerlist.push(HA.textContent)
+            } else if (rain > 50){
+                adviceFlag = true
+                let HA = document.createElement("p")
+                HA.textContent = "(RAIN: " + rounddp(rain, 2) + "%) Some rain, be careful not to slip."
+                document.querySelector(".healthAdvice").appendChild(HA)
+                bannerlist.push(HA.textContent)
+            } else if (rain > 25){
+                adviceFlag = true
+                let HA = document.createElement("p")
+                HA.textContent = "(RAIN: " + rounddp(rain, 2) + "%) A little bit of rain, be careful not to slip."
+                document.querySelector(".healthAdvice").appendChild(HA)
+                bannerlist.push(HA.textContent)
+            }
+        } else {
+            document.querySelector(".forecastrainbg" + x).remove()
+            adviceFlag = true
+            let HA = document.createElement("p")
+            HA.textContent = "Rain for today is unknown, check back when data is available."
+            document.querySelector(".healthAdvice").appendChild(HA)
+            bannerlist.push(HA.textContent)
+        }
 
         if (!adviceFlag){
             let HA = document.createElement("p")
@@ -201,6 +256,9 @@ async function weatherTime(position){
             document.querySelector(".healthAdvice").appendChild(HA)
         }
     }
+
+    document.querySelector(".artavg").textContent = "Average " + rainindex[Math.round(avgrainimg/7)-1].name
+    document.querySelector(".titleimg").style.backgroundImage = "url(" + rainindex[Math.round(avgrainimg/7)-1].url + ")"
 
     setBanner()
 }
@@ -301,5 +359,5 @@ let rainbow = Math.round(Math.random()*360)
 
 setInterval(function(){
     document.body.style.backgroundColor = "hsl(" + rainbow + "deg 50% 25%)"
-    rainbow += 0.01
-}, 0)
+    rainbow += 0.1
+}, 10)
