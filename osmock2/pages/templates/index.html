@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HEALTH ADVICE GROUP</title>
 
-    <link rel="shortcut icon" href="https://waspventman.co.uk/img/wasp.png" type="image/x-icon">
+    <link rel="shortcut icon" href="{% static '/img/HDP5.png' %}" type="image/x-icon">
 
     <link rel="stylesheet" href="{% static '/css/style.css' %}">
 </head>
@@ -25,7 +25,7 @@
                 <div class="titleimg" style="background-position: center;">
                     <h1 class="locTitle" style="text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF; margin: 0%; font-size: 2em;">Forecast for...</h1>
                     <p class="geoError" style="text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF; margin: 0%;"></p>
-                    <p class="artavg" style="text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF; margin: 0%; padding-bottom: 8px;"></p>
+                    <a href="#hag">?</a><p class="artavg" style="text-shadow: -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF, 1px 1px 0 #FFF; margin: 0%; padding-bottom: 8px;"></p>
                 </div>
                 <div class="wholeweather" style="width: 100%">
                     <div>
@@ -165,7 +165,7 @@
             <div class="healthAdvice" style="background-color: white; color: black; width: 100%;">
                 <h1 style="margin: 0%; font-size: 2em;">HEALTH ADVICE</h1>
                 <a id="DAQI" href="https://uk-air.defra.gov.uk/air-pollution/daqi">Help for understanding the Daily Air Quality Index (DAQI)</a>
-                <p>Hag's Delirium is tied to the DAQI and the rain chance, the worse the day, the higher the phase.</p>
+                <p id="hag">Hag's Delirium is tied to the DAQI and the rain chance, the worse the day, the higher the phase.</p>
                 <p>If it says "somewhere in [location]" it's because the API doesn't recognise your city/town.</p>
             </div><br>
 
