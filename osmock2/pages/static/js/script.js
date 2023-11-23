@@ -91,33 +91,41 @@ async function weatherTime(position){
     const weatherR = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=weather_code,temperature_2m_max,temperature_2m_min,temperature_2m_min,rain_sum`)
     const airQualityR = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&hourly=pm10,pm2_5&forecast_days=7`)
 
-    const locationR = await fetch(`https://api.opencagedata.com/geocode/v1/json?key=df841ae3cebd4c4d91643bf19e972128&q=${lat},${lng}&pretty=1&no_annotations=1`)
-    const location = await locationR.json()
+    try{
+        const locationR = await fetch(`https://api.opencagedata.com/geocode/v1/json?key=df841ae3cebd4c4d91643bf19e972128&q=${lat},${lng}&pretty=1&no_annotations=1`)
+        const location = await locationR.json()
 
-    let locationstr = `Forecast for `
+        if (location.rate.remaining < 10000){
+            document.querySelector(".geoError").textContent += `, Warning: low usage on location API remaining (${location.rate.remaining} left)`
+        }
 
-    if (location.results[0].components.city != undefined){
-        locationstr += location.results[0].components.city + ", "
-    } else {
-        locationstr = "Forecast for somewhere in "
+        let locationstr = `Forecast for `
+
+        if (location.results[0].components.city != undefined){
+            locationstr += location.results[0].components.city + ", "
+        } else {
+            locationstr = "Forecast for somewhere in "
+        }
+
+        if (location.results[0].components.city == location.results[0].components.state){
+            locationstr = locationstr.slice(0, -2)
+        } else if (location.results[0].components.state != undefined){
+            locationstr += location.results[0].components.state
+        } else if (location.results[0].components.country != undefined){
+            locationstr += location.results[0].components.country
+        }
+
+        // Madness Combat Easter Egg
+        if (locationstr == "Forecast for somewhere in Nevada"){
+            locationstr = "SOMEWHERE IN NEVADA"
+            document.querySelector(".locTitle").style.fontFamily = "Impact"
+            document.querySelector(".locTitle").style.textShadow = "-1px -1px 0 #F00, 1px -1px 0 #F00, -1px 1px 0 #F00, 1px 1px 0 #F00"
+        }
+
+        document.querySelector(".locTitle").textContent = locationstr
+    } catch {
+        document.querySelector(".geoError").textContent += `, Location API dry, location names will not be shown until tomorrow :(`
     }
-
-    if (location.results[0].components.city == location.results[0].components.state){
-        locationstr = locationstr.slice(0, -2)
-    } else if (location.results[0].components.state != undefined){
-        locationstr += location.results[0].components.state
-    } else if (location.results[0].components.country != undefined){
-        locationstr += location.results[0].components.country
-    }
-
-    // Madness Combat Easter Egg
-    if (locationstr == "Forecast for somewhere in Nevada"){
-        locationstr = "SOMEWHERE IN NEVADA"
-        document.querySelector(".locTitle").style.fontFamily = "Impact"
-        document.querySelector(".locTitle").style.textShadow = "-1px -1px 0 #F00, 1px -1px 0 #F00, -1px 1px 0 #F00, 1px 1px 0 #F00"
-    }
-
-    document.querySelector(".locTitle").textContent = locationstr
 
     const weather = await weatherR.json()
     const airQuality = await airQualityR.json()
@@ -131,14 +139,18 @@ async function weatherTime(position){
 
         let AQI = airQuality.hourly.pm2_5[x*24]
         let rain = weather.daily.rain_sum[x]
-        let rainimg = Math.round((rain/100)*(rainindex.length-1))
+        let rainimg = 0
         let aqiimg = 0
 
-        if (AQI != null){
+        if (rain != null && rain != undefined){
+            rainimg = Math.round((rain/100)*(rainindex.length-1))
+        }
+
+        if (AQI != null && AQI != undefined){
             aqiimg = Math.floor((parseFloat(AQIconvert(AQI)[0])/10)*(rainindex.length-1))
         }
 
-        if (aqiimg > rainimg){
+        if (aqiimg > rainimg){ 
             rainimg = aqiimg
         }
 
@@ -169,23 +181,49 @@ async function weatherTime(position){
 
         document.querySelector(".forecastbg" + x).style.backgroundImage = "url(" + rainindex[rainimg].url + ")"
 
-        if (celcius[1] < 0){
+        if (celcius[0] != null && celcius[0] != undefined && celcius[1] != null && celcius[1] != undefined){
+            if (celcius[1] < 0){
+                adviceFlag = true
+                let HA = document.createElement("p")
+                HA.textContent = "(LOW TEMP " + celcius[1] + "°C) The low temperature is below freezing, wrap up warm."
+                document.querySelector(".healthAdvice").appendChild(HA)
+                bannerlist.push(HA.textContent)
+            } else if (celcius[0] > 30){
+                adviceFlag = true
+                let HA = document.createElement("p")
+                HA.textContent = "(HIGH TEMP " + celcius[0] + "°C) The high temperature is very high, try to stay cool."
+                document.querySelector(".healthAdvice").appendChild(HA)
+                bannerlist.push(HA.textContent)
+            }
+
+            if (celcius[1] < 10){
+                coldgrad = Math.round(255-(255*((-celcius[1]+10)/30))) + ",255,255"
+            } else if (celcius[1] > 10){
+                coldgrad = "255," + Math.round(255-(255*((celcius[1]-10)/30))) + "," + Math.round(255-(255*((celcius[1]-10)/30)))
+            } else {
+                coldgrad = "255,255,255"
+            }
+
+            if (celcius[0] < 10){
+                hotgrad = Math.round(255-(255*((-celcius[0]+10)/30))) + ",255,255"
+            } else if (celcius[0] > 10){
+                hotgrad = "255," + Math.round(255-(255*((celcius[0]-10)/30))) + "," + Math.round(255-(255*((celcius[0]-10)/30)))
+            } else {
+                hotgrad = "255,255,255"
+            }
+
+            document.querySelector(".forecasttemp" + x).textContent = rounddp(celcius[1], 1) + "°C " + rounddp(celcius[0], 1) +"°C"
+            document.querySelector(".forecasttempbg" + x).style.background = "linear-gradient(180deg, rgba(" + coldgrad + ",1) 45%, rgba(" + hotgrad + ",1) 55%)"
+        } else {
+            document.querySelector(".forecasttempbg" + x).remove()
             adviceFlag = true
             let HA = document.createElement("p")
-            HA.textContent = "(LOW TEMP " + celcius[1] + "°C) The low temperature is below freezing, wrap up warm."
-            document.querySelector(".healthAdvice").appendChild(HA)
-            bannerlist.push(HA.textContent)
-        } else if (celcius[0] > 30){
-            adviceFlag = true
-            let HA = document.createElement("p")
-            HA.textContent = "(HIGH TEMP " + celcius[0] + "°C) The high temperature is very high, try to stay cool."
+            HA.textContent = "Temperature for today is unknown, check back when data is available."
             document.querySelector(".healthAdvice").appendChild(HA)
             bannerlist.push(HA.textContent)
         }
 
-        document.querySelector(".forecasttemp" + x).textContent = rounddp(celcius[1], 1) + "°C " + rounddp(celcius[0], 1) +"°C"
-
-        if (AQI != null){
+        if (AQI != null && AQI != undefined){
             document.querySelector(".forecastAQI" + x).textContent = "DAQI: " + AQIconvert(AQI)[0]
             document.querySelector(".forecastAQIbg" + x).style.backgroundColor = AQIconvert(AQI)[1]
 
@@ -217,7 +255,7 @@ async function weatherTime(position){
             bannerlist.push(HA.textContent)
         }
 
-        if (rain != null){
+        if (rain != null && rain != undefined){
             document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rounddp(rain, 1) + "%"
             document.querySelector(".forecastrainbg" + x).style.backgroundColor = `rgb(${255-((255/100)*rain)}, 255, 255)`
 
@@ -257,7 +295,7 @@ async function weatherTime(position){
         }
     }
 
-    document.querySelector(".artavg").textContent = "Average " + rainindex[Math.round(avgrainimg/7)-1].name
+    document.querySelector(".artavg").innerHTML = "<a href='#hag'>?</a> Average " + rainindex[Math.round(avgrainimg/7)-1].name
     document.querySelector(".titleimg").style.backgroundImage = "url(" + rainindex[Math.round(avgrainimg/7)-1].url + ")"
 
     setBanner()
@@ -273,8 +311,8 @@ function showError(error) {
     let lng = params.get("lng")
 
     if (lat != null && lng != null && !isNaN(parseInt(lat)) && !isNaN(parseInt(lng))){
-        weatherTime({"coords": {"latitude": lat, "longitude": lng}})
         document.querySelector(".geoError").textContent = `Manual Geolocation enabled (${lat}, ${lng})`
+        weatherTime({"coords": {"latitude": lat, "longitude": lng}})
         return
     }
 
@@ -294,41 +332,6 @@ function showError(error) {
     }
 
     document.querySelector(".wholeweather").innerHTML = ""
-
-    let temp = document.createElement("p")
-    temp.textContent = "Manual Geolocation Entry:"
-    document.querySelector(".wholeweather").appendChild(temp)
-    temp = document.createElement("i")
-    temp.textContent = "Latitude: "
-    document.querySelector(".wholeweather").appendChild(temp)
-    temp = document.createElement("input")
-    temp.className = "ManualGeolocationInputLat"
-    document.querySelector(".wholeweather").appendChild(temp)
-    document.querySelector(".wholeweather").appendChild(document.createElement("br"))
-    temp = document.createElement("i")
-    temp.textContent = "Longitude: "
-    document.querySelector(".wholeweather").appendChild(temp)
-    temp = document.createElement("input")
-    temp.className = "ManualGeolocationInputLng"
-    document.querySelector(".wholeweather").appendChild(temp)
-    document.querySelector(".wholeweather").appendChild(document.createElement("br"))
-    temp = document.createElement("button")
-    temp.textContent = "Submit"
-    temp.onclick = function(){
-        if (
-            document.querySelector(".ManualGeolocationInputLat").value != "" &&
-            document.querySelector(".ManualGeolocationInputLng").value != "" &&
-            !isNaN(parseInt(document.querySelector(".ManualGeolocationInputLat").value)) &&
-            !isNaN(parseInt(document.querySelector(".ManualGeolocationInputLng").value)) &&
-            parseInt(document.querySelector(".ManualGeolocationInputLat").value) < 90 &&
-            parseInt(document.querySelector(".ManualGeolocationInputLat").value) > -90 &&
-            parseInt(document.querySelector(".ManualGeolocationInputLng").value) < 180 &&
-            parseInt(document.querySelector(".ManualGeolocationInputLng").value) > -180
-            ){
-                location.href = location.href + "?lat=" + document.querySelector(".ManualGeolocationInputLat").value + "&lng=" + document.querySelector(".ManualGeolocationInputLng").value
-            }
-        }
-    document.querySelector(".wholeweather").appendChild(temp)
 }
 
 /**
