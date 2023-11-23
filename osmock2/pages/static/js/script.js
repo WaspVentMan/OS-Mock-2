@@ -95,13 +95,14 @@ async function weatherTime(position){
         const locationR = await fetch(`https://api.opencagedata.com/geocode/v1/json?key=df841ae3cebd4c4d91643bf19e972128&q=${lat},${lng}&pretty=1&no_annotations=1`)
         const location = await locationR.json()
 
-        if (location.rate.remaining < 10000){
-            document.querySelector(".geoError").textContent += `, Warning: low usage on location API remaining (${location.rate.remaining} left)`
+        if (location.rate.remaining < 100){
+            document.querySelector(".geoError").textContent += `\nWarning: low usage on location API remaining (${location.rate.remaining} left)`
         }
 
         let locationstr = `Forecast for `
 
         if (location.results[0].components.city != undefined){
+            console.log(location.results[0].components.city)
             locationstr += location.results[0].components.city + ", "
         } else {
             locationstr = "Forecast for somewhere in "
@@ -115,6 +116,10 @@ async function weatherTime(position){
             locationstr += location.results[0].components.country
         }
 
+        if (location.results[0].components.city == undefined && location.results[0].components.state == undefined && location.results[0].components.country == undefined){
+            locationstr = "Forecast for somwhere..."
+        }
+
         // Madness Combat Easter Egg
         if (locationstr == "Forecast for somewhere in Nevada"){
             locationstr = "SOMEWHERE IN NEVADA"
@@ -123,6 +128,7 @@ async function weatherTime(position){
         }
 
         document.querySelector(".locTitle").textContent = locationstr
+        document.title = locationstr
     } catch {
         document.querySelector(".geoError").textContent += `, Location API dry, location names will not be shown until tomorrow :(`
     }
@@ -141,6 +147,7 @@ async function weatherTime(position){
         let rain = weather.daily.rain_sum[x]
         let rainimg = 0
         let aqiimg = 0
+        let hagrep = "none"
 
         if (rain != null && rain != undefined){
             rainimg = Math.round((rain/100)*(rainindex.length-1))
@@ -150,8 +157,13 @@ async function weatherTime(position){
             aqiimg = Math.floor((parseFloat(AQIconvert(AQI)[0])/10)*(rainindex.length-1))
         }
 
+        console.log(rainimg)
+        console.log(aqiimg)
         if (aqiimg > rainimg){ 
             rainimg = aqiimg
+            hagrep = "daqi"
+        } else if (rainimg != 0){
+            hagrep = "rain"
         }
 
         if (rainimg > rainindex.length-1){
@@ -169,7 +181,7 @@ async function weatherTime(position){
         HA.style.margin = "0%"
         HA.textContent = newdate.getDate() + "/" + (newdate.getMonth()+1) + "/" + newdate.getFullYear()
         document.querySelector(".healthAdvice").appendChild(HA)
-        bannerlist.push(HA.textContent)
+        bannerlist.push("("+HA.textContent+")")
 
         document.querySelector(".forecast" + x).textContent = newdate.getDate() + "/" + (newdate.getMonth()+1) + "/" + newdate.getFullYear()
 
@@ -224,7 +236,11 @@ async function weatherTime(position){
         }
 
         if (AQI != null && AQI != undefined){
-            document.querySelector(".forecastAQI" + x).textContent = "DAQI: " + AQIconvert(AQI)[0]
+            if (hagrep == "daqi"){
+                document.querySelector(".forecastAQI" + x).textContent = "*DAQI: " + AQIconvert(AQI)[0]
+            } else {
+                document.querySelector(".forecastAQI" + x).textContent = "DAQI: " + AQIconvert(AQI)[0]
+            }
             document.querySelector(".forecastAQIbg" + x).style.backgroundColor = AQIconvert(AQI)[1]
 
             if (AQIconvert(AQI)[0] == "10+"){
@@ -256,7 +272,11 @@ async function weatherTime(position){
         }
 
         if (rain != null && rain != undefined){
-            document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rounddp(rain, 1) + "%"
+            if (hagrep == "rain"){
+                document.querySelector(".forecastrain" + x).textContent = "*RAIN: " + rounddp(rain, 1) + "%"
+            } else {
+                document.querySelector(".forecastrain" + x).textContent = "RAIN: " + rounddp(rain, 1) + "%"
+            }
             document.querySelector(".forecastrainbg" + x).style.backgroundColor = `rgb(${255-((255/100)*rain)}, 255, 255)`
 
             if (rain > 75){
@@ -297,6 +317,7 @@ async function weatherTime(position){
 
     document.querySelector(".artavg").innerHTML = "<a href='#hag'>?</a> Average " + rainindex[Math.round(avgrainimg/7)-1].name
     document.querySelector(".titleimg").style.backgroundImage = "url(" + rainindex[Math.round(avgrainimg/7)-1].url + ")"
+    document.querySelector("link[rel~='icon']").href = rainindex[Math.round(avgrainimg/7)-1].url
 
     setBanner()
 }
